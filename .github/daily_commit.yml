@@ -1,0 +1,28 @@
+name: Daily ASCII Image Update
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Run every 2 hours (12 times per day)
+  workflow_dispatch:  # Allows manual trigger for testing
+
+jobs:
+  update_ascii_image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config user.name "elbarroca"
+          git config user.email "btcto154k@gmail.com"
+
+      - name: Run the daily update script
+        env:
+          GIT_TOKEN: ${{ secrets.SECRET_GREEN }}
+        run: |
+          chmod +x ./daily_update.sh
+          ./daily_update.sh
