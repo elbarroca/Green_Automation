@@ -2,12 +2,14 @@ name: Daily ASCII Art Commit
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # Runs every 2 hours
+    - cron: '*/30 * * * *'  # Runs every 30 minutes (for testing)
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
   commit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     - uses: actions/checkout@v2
@@ -16,12 +18,12 @@ jobs:
         
     - name: Setup Git
       run: |
-        git config --global user.name 'GitHub Action'
-        git config --global user.email 'action@github.com'
+        git config user.name "elbarroca"
+        git config user.email "btcto154k@gmail.com"
         
     - name: Run Daily Update Script
       run: |
         chmod +x ./daily_update.sh
         ./daily_update.sh
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }} 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
