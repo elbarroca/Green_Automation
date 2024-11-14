@@ -1,0 +1,27 @@
+name: Daily ASCII Art Commit
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Runs every 2 hours
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        
+    - name: Setup Git
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+        
+    - name: Run Daily Update Script
+      run: |
+        chmod +x ./daily_update.sh
+        ./daily_update.sh
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }} 

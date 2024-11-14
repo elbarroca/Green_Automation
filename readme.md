@@ -74,4 +74,4 @@ This project is open-source under the MIT license. Feel free to fork, customize,
 
 ---
 
-Enjoy the ASCII art, and may your profile stay green (even if it doesn’t mean anything)! 😎
+Enjoy the ASCII art, and may your profile stay green (even if it doesn’t mean anything)! 😎 :D
