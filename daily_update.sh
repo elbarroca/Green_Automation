@@ -1,66 +1,62 @@
 #!/bin/bash
 
-# Configuration
-IMAGES_DIR="ascii_images"
-OUTPUT_FILE="output.txt"
-PROGRESS_FILE="progress.txt"
-DAILY_COUNT_FILE="daily_count.txt"
-MAX_DAILY_COMMITS=10
+# Function to get today's date in YYYY-MM-DD format
+get_today() {
+    date +%Y-%m-%d
+}
 
-# Initialize progress file if it doesn't exist
-if [ ! -f "$PROGRESS_FILE" ]; then
-    echo "1 1" > "$PROGRESS_FILE"  # Format: <image_number> <line_number>
+# Function to read the last commit date and count
+get_last_commit_info() {
+    if [ -f "progress.txt" ]; then
+        last_date=$(head -n 1 progress.txt)
+        current_count=$(tail -n 1 progress.txt)
+    else
+        last_date="1970-01-01"
+        current_count=0
+    fi
+    echo "$last_date $current_count"
+}
+
+# Function to make a single commit
+make_commit() {
+    local commit_number=$1
+    echo "Making commit $commit_number of 28"
+    
+    # Generate random ASCII art (preserving original functionality)
+    IMAGES_DIR="ascii_images"
+    if [ -d "$IMAGES_DIR" ]; then
+        # Get a random image file from the directory
+        IMAGE_FILE=$(ls $IMAGES_DIR/*.txt | shuf -n 1)
+        if [ -f "$IMAGE_FILE" ]; then
+            cat "$IMAGE_FILE" > output.txt
+        fi
+    fi
+    
+    # Update the daily count and progress
+    echo $commit_number > daily_count.txt
+    echo "$(get_today)" > progress.txt
+    echo "$commit_number" >> progress.txt
+    
+    # Add and commit all tracked files
+    git add .
+    git commit -m "Daily commit $commit_number/28"
+    git push origin main
+}
+
+# Main logic
+today=$(get_today)
+read last_date current_count <<< $(get_last_commit_info)
+
+# If it's a new day, reset the count
+if [ "$today" != "$last_date" ]; then
+    current_count=0
 fi
 
-# Initialize daily count file if it doesn't exist
-if [ ! -f "$DAILY_COUNT_FILE" ]; then
-    echo "0" > "$DAILY_COUNT_FILE"
-fi
-
-# Read current progress
-read current_image current_line < "$PROGRESS_FILE"
-daily_count=$(cat "$DAILY_COUNT_FILE")
-
-# Get current image file
-image_file="${IMAGES_DIR}/image${current_image}.txt"
-
-# Check if image file exists
-if [ ! -f "$image_file" ]; then
-    echo "Starting over from image1.txt"
-    current_image=1
-    current_line=1
-    image_file="${IMAGES_DIR}/image${current_image}.txt"
-fi
-
-# Get total lines in current image
-total_lines=$(wc -l < "$image_file")
-
-# Add next line to output file
-sed -n "${current_line}p" "$image_file" >> "$OUTPUT_FILE"
-
-# Update progress
-if [ "$current_line" -ge "$total_lines" ]; then
-    # Move to next image
-    current_image=$((current_image + 1))
-    current_line=1
+# Only make a commit if we haven't reached 28 for today
+if [ $current_count -lt 28 ]; then
+    next_commit=$((current_count + 1))
+    make_commit $next_commit
+    echo "Successfully made commit $next_commit for $today"
 else
-    # Move to next line
-    current_line=$((current_line + 1))
-fi
-
-# Update progress file
-echo "$current_image $current_line" > "$PROGRESS_FILE"
-
-# Update daily commit count
-daily_count=$((daily_count + 1))
-echo "$daily_count" > "$DAILY_COUNT_FILE"
-
-# Git operations
-git add "$OUTPUT_FILE"
-git commit -m "🌿 Day's growth: Line $current_line of Image $current_image"
-git push origin main
-
-# Reset daily count if we've reached max commits
-if [ "$daily_count" -ge "$MAX_DAILY_COMMITS" ]; then
-    echo "0" > "$DAILY_COUNT_FILE"
+    echo "Already reached 28 commits for today ($today)"
 fi

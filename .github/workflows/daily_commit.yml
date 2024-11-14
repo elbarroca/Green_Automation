@@ -2,7 +2,7 @@ name: Daily ASCII Art Commit
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Runs every 30 minutes (for testing)
+    - cron: '*/5 * * * *'  # Runs every 5 minutes for testing
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
